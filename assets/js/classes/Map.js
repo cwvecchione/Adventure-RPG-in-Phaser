@@ -8,7 +8,7 @@ class Map {
         this.createMap();
     }
     
-     createMap() {
+    createMap() {
     // create the tile map
     this.map = this.scene.make.tilemap({ key: this.key });
     // add the tileset image to our map
