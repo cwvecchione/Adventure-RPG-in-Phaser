@@ -1,3 +1,9 @@
 class ChestModel {
-    constructor() {}
+    constructor() {
+        this.id
+        this.spawnerId
+        this.x
+        this.y
+        this.gold
+    }
 }
