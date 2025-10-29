@@ -45,6 +45,13 @@ class GameManager {
     }
 
     setupEventListener() {
+        this.scene.events.on('pickUpChest', (chestId) => {
+            // update the spawner
+            if (this.chests[chestId]) {
+            // removing the chest
+            this.spawners[this.chests[chestId].spawnerId].removeObject(chestId);
+            }
+        });
     }
 
     setupSpawners() {
@@ -54,14 +61,29 @@ class GameManager {
                 spawnInterval: 3000,
                 limit: 3,
                 spawnerType: SpawnerType.CHEST,
-                id: `chest-${key}`
+                id: `chest-${key}`,
             };
-            // Feel free to leave the parameters on one line. This is for readability
             const spawner = new Spawner(
                 config,
                 this.chestLocations[key],
                 this.addChest.bind(this),
                 this.deleteChest.bind(this)
+            );
+            this.spawners[spawner.id] = spawner;
+        });
+        // create monster spawners
+        Object.keys(this.monsterLocations).forEach((key) => {
+            const config = {
+                spawnInterval: 3000,
+                limit: 3,
+                spawnerType: SpawnerType.MONSTER,
+                id: `monster-${key}`,
+            };
+            const spawner = new Spawner(
+                config,
+                this.monsterLocations[key],
+                this.addMonster.bind(this),
+                this.deleteMonster.bind(this),
             );
             this.spawners[spawner.id] = spawner;
         });
@@ -78,5 +100,14 @@ class GameManager {
 
     deleteChest(chestId) {
         delete this.chests[chestId];
+    }
+
+    addMonster(monsterId, monster) {
+        this.monsters[monsterId] = monster;
+        this.scene.events.emit('monsterSpawned', monster);
+    }
+    
+    deleteMonster(monsterId) {
+        delete this.monsters[monsterId];
     }
 }

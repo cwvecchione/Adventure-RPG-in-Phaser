@@ -29,14 +29,21 @@ class GameScene extends Phaser.Scene {
     this.player = new Player(this, location[0] * 2, location[1] * 2, 'characters', 0);
   }
 
-createGameManager() {
-  this.events.on('spawnPlayer', (location) => {
-  this.createPlayer(location);
-  this.addCollisions();
-});
-this.gameManager = new GameManager(this, this.map.map.objects);
-this.gameManager.setup();
-}
+  createGameManager() {
+    this.events.on('spawnPlayer', (location) => {
+      this.createPlayer(location);
+      this.addCollisions();
+    });
+    this.events.on('chestSpawned', (chest) => {
+      this.spawnChest(chest);
+    });
+    // listen to the event to spawn a monster
+    this.events.on('monsterSpawned', (monster) => {
+      this.spawnMonster(monster);
+    });
+    this.gameManager = new GameManager(this, this.map.map.objects);
+    this.gameManager.setup();
+  }
 
   createChests() {
     // create a chest group
@@ -51,19 +58,22 @@ this.gameManager.setup();
     }
   }
 
-  spawnChest() {
-    const location = this.chestPositions[Math.floor(Math.random() * this.chestPositions.length)];
-
+  spawnChest(chestObject) {
     let chest = this.chests.getFirstDead();
-
     if (!chest) {
-      const chest = new Chest(this, location[0], location[1], 'items', 0);
+      chest = new Chest(this, chestObject.x * 2, chestObject.y * 2, 'items', 0);
       // add chest to chests group
       this.chests.add(chest);
     } else {
-      chest.setPosition(location[0], location[1]);
+      chest.coins = chestObject.gold; // pass the amount of gold
+      chest.id = chestObject.id; // pass the chest id
+      chest.setPosition(chestObject.x * 2, chestObject.y * 2);
       chest.makeActive();
     }
+  }
+
+  spawnChest(monster) {
+    console.log(monster);
   }
 
   createInput() {
@@ -86,6 +96,7 @@ this.gameManager.setup();
     this.events.emit('updateScore', this.score);
     // make chest game object inactive
     chest.makeInactive();
+    this.events.emit('pickUpChest', chest.id);
     // spawn a new chest
     this.time.delayedCall(1000, this.spawnChest, [], this);
   }
